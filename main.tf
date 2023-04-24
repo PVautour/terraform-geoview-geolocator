@@ -71,9 +71,55 @@ resource "aws_lambda_function" "test_lambda" {
   source_code_hash = data.archive_file.lambda.output_base64sha256
 
   runtime = "python3.9"
+}
 
-  environment {
-    variables = {
-    }
+# Define the API Gateway
+resource "aws_api_gateway_rest_api" "example" {
+  name        = "example-api-gateway"
+  description = "Example API Gateway"
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
   }
 }
+
+# Define the API Gateway resource
+resource "aws_api_gateway_resource" "example" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id   = aws_api_gateway_rest_api.example.root_resource_id
+  path_part   = "v0"
+}
+
+# Define the API Gateway method
+resource "aws_api_gateway_method" "example" {
+  rest_api_id   = aws_api_gateway_rest_api.example.id
+  resource_id   = aws_api_gateway_resource.example.id
+  http_method   = "GET"
+  authorization = "None"
+  request_parameters = {
+    "method.request.querystring.q"    = true
+    "method.request.querystring.lang" = false
+    "method.request.querystring.keys" = false
+  }
+}
+
+# Define the API Gateway integration with Lambda
+resource "aws_api_gateway_integration" "example" {
+  rest_api_id             = aws_api_gateway_rest_api.example.id
+  resource_id             = aws_api_gateway_resource.example.id
+  http_method             = aws_api_gateway_method.example.http_method
+  integration_http_method = "GET"
+  type                    = "AWS"
+  uri                     = aws_lambda_function.test_lambda.invoke_arn
+}
+
+# # Define the API Gateway deployment
+# resource "aws_apigatewayv2_deployment" "example" {
+#   api_id = aws_api_gateway_rest_api.example.id
+# }
+
+# # Define the API Gateway stage
+# resource "aws_apigatewayv2_stage" "example" {
+#   name   = "dev"
+#   api_id = aws_api_gateway_rest_api.example.id
+# }
