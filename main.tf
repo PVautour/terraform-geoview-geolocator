@@ -13,6 +13,29 @@ provider "aws" {
   region = "ca-central-1"
 }
 
+resource "aws_iam_policy" "s3_access_policy" {
+  name = "s3_access_policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["s3:GetObject"]
+        Resource = "${aws_s3_bucket.geolocator.arn}/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "s3_access_policy_attachment" {
+  policy_arn = aws_iam_policy.s3_access_policy.arn
+  role       = aws_iam_role.iam_for_lambda.name
+}
+
+resource "aws_s3_bucket" "geolocator" {
+  bucket = "geolocator-cf"
+}
+
 data "aws_iam_policy_document" "assume_role" {
   statement {
     effect = "Allow"
@@ -24,15 +47,6 @@ data "aws_iam_policy_document" "assume_role" {
 
     actions = ["sts:AssumeRole"]
   }
-
-  # statement {
-  #   effect = "Allow"
-  #   actions = [
-  #     "s3:*"
-  #   ]
-  #   resources = ["*"]
-  # }
-
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
@@ -62,4 +76,9 @@ resource "aws_lambda_function" "test_lambda" {
     variables = {
     }
   }
+
+
+
+
+
 }
