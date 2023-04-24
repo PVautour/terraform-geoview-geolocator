@@ -20,17 +20,42 @@ resource "aws_iam_policy" "s3_access_policy" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["s3:GetObject"]
-        Resource = "${aws_s3_bucket.geolocator.arn}/*"
+        Action   = ["s3:*", "s3-object-lambda:*"]
+        Resource = "*"
       }
     ]
   })
 }
 
+# resource "aws_iam_policy" "cloudwatch_access_policy" {
+#   name        = "cloudwatch-policy"
+#   description = "cloudwatch IAM policy"
+
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "logs:CreateLogGroup",
+#           "logs:CreateLogStream",
+#           "logs:PutLogEvents",
+#         ]
+#         Resource = "*"
+#       },
+#     ]
+#   })
+# }
+
 resource "aws_iam_role_policy_attachment" "s3_access_policy_attachment" {
   policy_arn = aws_iam_policy.s3_access_policy.arn
   role       = aws_iam_role.iam_for_lambda.name
 }
+
+# resource "aws_iam_role_policy_attachment" "cloudwatch_access_policy_attachment" {
+#   policy_arn = aws_iam_policy.cloudwatch_access_policy.arn
+#   role       = aws_iam_role.iam_for_lambda.name
+# }
 
 resource "aws_s3_bucket" "geolocator" {
   bucket = "geolocator-cf"
@@ -60,66 +85,50 @@ data "archive_file" "lambda" {
   output_path = "lambda_function_payload.zip"
 }
 
-resource "aws_lambda_function" "test_lambda" {
+resource "aws_lambda_function" "example" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = "lambda_function_payload.zip"
-  function_name = "geoview-api-geolocator"
-  role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "geolocator-lambda.lambda_handler"
-
+  filename         = "lambda_function_payload.zip"
+  function_name    = "geoview-api-geolocator"
+  role             = aws_iam_role.iam_for_lambda.arn
+  handler          = "geolocator-lambda.lambda_handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
-
-  runtime = "python3.9"
+  timeout          = 30
+  runtime          = "python3.7"
 }
 
-# Define the API Gateway
 resource "aws_api_gateway_rest_api" "example" {
-  name        = "example-api-gateway"
-  description = "Example API Gateway"
-
-  endpoint_configuration {
-    types = ["REGIONAL"]
-  }
+  name        = "example-api"
+  description = "Example API"
 }
 
-# Define the API Gateway resource
 resource "aws_api_gateway_resource" "example" {
   rest_api_id = aws_api_gateway_rest_api.example.id
   parent_id   = aws_api_gateway_rest_api.example.root_resource_id
-  path_part   = "v0"
+  path_part   = "{proxy+}"
 }
 
-# Define the API Gateway method
 resource "aws_api_gateway_method" "example" {
   rest_api_id   = aws_api_gateway_rest_api.example.id
   resource_id   = aws_api_gateway_resource.example.id
   http_method   = "GET"
-  authorization = "None"
-  request_parameters = {
-    "method.request.querystring.q"    = true
-    "method.request.querystring.lang" = false
-    "method.request.querystring.keys" = false
-  }
+  authorization = "NONE"
 }
 
-# Define the API Gateway integration with Lambda
+resource "aws_lambda_permission" "example" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.example.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.example.execution_arn}/*/*/*"
+}
+
 resource "aws_api_gateway_integration" "example" {
   rest_api_id             = aws_api_gateway_rest_api.example.id
   resource_id             = aws_api_gateway_resource.example.id
   http_method             = aws_api_gateway_method.example.http_method
-  integration_http_method = "GET"
-  type                    = "AWS"
-  uri                     = aws_lambda_function.test_lambda.invoke_arn
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.example.invoke_arn
 }
-
-# # Define the API Gateway deployment
-# resource "aws_apigatewayv2_deployment" "example" {
-#   api_id = aws_api_gateway_rest_api.example.id
-# }
-
-# # Define the API Gateway stage
-# resource "aws_apigatewayv2_stage" "example" {
-#   name   = "dev"
-#   api_id = aws_api_gateway_rest_api.example.id
-# }
