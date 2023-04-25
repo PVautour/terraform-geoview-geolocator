@@ -98,8 +98,8 @@ resource "aws_lambda_function" "example" {
 }
 
 resource "aws_api_gateway_rest_api" "example" {
-  name        = "example-api"
-  description = "Example API"
+  name        = "geolocator-api"
+  description = "Example geolocator API"
 }
 
 resource "aws_api_gateway_resource" "example" {

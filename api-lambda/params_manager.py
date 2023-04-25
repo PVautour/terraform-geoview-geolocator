@@ -13,7 +13,7 @@ def validate_required_parameters_with_schema(schema, parameters):
     schema_required = schema["required"]
     for require in schema_required:
         if not parameters.get(require):
-            error_message = f"inexistent parameter '{require}'"
+            error_message = "inexistent parameter '{require}'"
             raise Exception(error_message)
         schema_params = schema_properties[require]
         url_params = parameters[require]
