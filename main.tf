@@ -27,35 +27,15 @@ resource "aws_iam_policy" "s3_access_policy" {
   })
 }
 
-# resource "aws_iam_policy" "cloudwatch_access_policy" {
-#   name        = "cloudwatch-policy"
-#   description = "cloudwatch IAM policy"
-
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "logs:CreateLogGroup",
-#           "logs:CreateLogStream",
-#           "logs:PutLogEvents",
-#         ]
-#         Resource = "*"
-#       },
-#     ]
-#   })
-# }
-
 resource "aws_iam_role_policy_attachment" "s3_access_policy_attachment" {
   policy_arn = aws_iam_policy.s3_access_policy.arn
   role       = aws_iam_role.iam_for_lambda.name
 }
 
-# resource "aws_iam_role_policy_attachment" "cloudwatch_access_policy_attachment" {
-#   policy_arn = aws_iam_policy.cloudwatch_access_policy.arn
-#   role       = aws_iam_role.iam_for_lambda.name
-# }
+resource "aws_iam_role_policy_attachment" "basic" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  role       = aws_iam_role.iam_for_lambda.name
+}
 
 resource "aws_s3_bucket" "geolocator" {
   bucket = "geolocator-cf"
