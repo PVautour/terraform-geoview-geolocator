@@ -2,7 +2,6 @@ from geolocator import Geolocator
 from params_manager import *
 from model_manager import *
 from constants import *
-import time
 
 def lambda_handler(event, context):
     """
@@ -22,7 +21,7 @@ def lambda_handler(event, context):
       event: Contiens the query parameters
       context: Not required for this function
 
-    Returns: Standarized, validated data from REST services related to
+    Return: Standarized, validated data from REST services related to
              geolocation to be handed to the front-end
     """
     # Initilize variables and objects
@@ -30,31 +29,32 @@ def lambda_handler(event, context):
     geolocator = Geolocator()
     # Read schemas from Geolocator
     schemas = geolocator.get_schemas()
+    tables = geolocator.get_tables()
     # Extract IO schemas
-    #time_ini = time.time()
     in_api_schema = schemas.get(IN_API)
-    out_api_schema = schemas.get(OUT_API)
-    output_schema = out_api_schema.get("definitions").get("output")
-    schema_items = output_schema.get("items").get("properties")
-    schema_required = output_schema.get("items").get("required")
+    output_schema_items = schemas.get(OUT_API). \
+                            get("definitions"). \
+                            get("output"). \
+                            get("items")
     # 0. Read and Validate the parameters
     params_full_list = validate_querystring_against_schema(event,in_api_schema)
     keys = params_full_list.pop("keys")
+    lang = params_full_list.get("lang")
+    # Only required for looku tables
+    table_params = (tables, lang)
     # services to call
-    for service in keys:
-        model = schemas.get(service)
-        schema = model.get_schema()
+    for service_id in keys:
+        # The schema for this service
+        service_schema = schemas.get(service_id)
         # Adjust the parameters to the service's schema
-        url = assemble_url(schema, params_full_list.copy())
+        url, params = assemble_url(service_schema, params_full_list.copy())
         # At this point the query must be complete
-        service_load = url_request(url)
+        service_load = url_request(url, params)
         # At this point is where the 'out' part of each model applies
-        items = items_from_service(service,
-                                   model,
-                                   schema_items,
-                                   schema_required,
+        items = items_from_service(service_id,
+                                   table_params,
+                                   service_schema,
+                                   output_schema_items,
                                    service_load)
         loads.extend(items)
-    #time_lapse = time.time() - time_ini
-    #loads.append(time_lapse)
     return loads
