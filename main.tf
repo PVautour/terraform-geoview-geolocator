@@ -38,7 +38,7 @@ resource "aws_iam_role_policy_attachment" "basic" {
 }
 
 resource "aws_s3_bucket" "geolocator" {
-  bucket = "geolocator-cf"
+  bucket = "geolocator-tf"
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -69,16 +69,17 @@ resource "aws_lambda_function" "example" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
   filename         = "lambda_function_payload.zip"
-  function_name    = "geolocator-lambda-cf"
+  function_name    = "geolocator-lambda-tf"
   role             = aws_iam_role.iam_for_lambda.arn
   handler          = "lambda_function.lambda_handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
   timeout          = 30
+  memory_size      = 3009
   runtime          = "python3.7"
 }
 
 resource "aws_api_gateway_rest_api" "example" {
-  name        = "geolocator-api"
+  name        = "geolocator-api-tf"
   description = "Example geolocator API"
 }
 
