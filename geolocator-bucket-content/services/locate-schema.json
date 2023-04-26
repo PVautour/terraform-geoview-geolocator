@@ -1,0 +1,58 @@
+{
+    "url": "https://geogratis.gc.ca/services/geolocation/_PARAM1_/locate",
+    "urlParams": {
+        "param1": "lang"
+    },
+    "staticParams": {
+        "expand": "component"
+    },
+    "urlCodeTables": {},
+    "lookup": {
+        "in": {
+            "q": "q"
+        },
+        "out": {
+            "structure" : {
+                "type": "list"
+                },
+            "data": {
+                "name": {
+                    "field": "title",
+                    "lookup": ""
+                },
+                "lat": {
+                    "field":"geometry.coordinates",
+                    "lookup": {
+                        "type": "array",
+                        "field":"1"
+                    }
+                },
+                "lng": {
+                    "field": "geometry.coordinates",
+                    "lookup": {
+                        "type": "array",
+                        "field":"0"
+                    }
+                },
+                "bbox": {
+                    "field": "bbox",
+                    "lookup": ""
+                },
+                "province": {
+                    "field": "component.province",
+                    "lookup": ""
+                },
+                "tag": [
+                    {
+                        "field": "component.location",
+                        "lookup": ""
+                    },
+                    {
+                        "field": "component.concise",
+                        "lookup": ""
+                    }
+                ]
+            }
+        }
+    }
+}
