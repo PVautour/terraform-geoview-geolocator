@@ -161,5 +161,5 @@ resource "aws_api_gateway_integration_response" "IntegrationResponse" {
   resource_id        = aws_api_gateway_resource.rest-api-resource.id
   http_method        = aws_api_gateway_method.get.http_method
   status_code        = aws_api_gateway_method_response.response_200.status_code
-  response_templates = { "application/json" = "Empty" }
+  response_templates = { "application/json" = "" }
 }
