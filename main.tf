@@ -13,6 +13,10 @@ provider "aws" {
   region = "ca-central-1"
 }
 
+resource "random_id" "s3" {
+  byte_length = 8
+}
+
 resource "aws_iam_policy" "s3_access_policy" {
   name = "s3_access_policy"
   policy = jsonencode({
@@ -38,7 +42,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_policy_attachement" {
 }
 
 resource "aws_s3_bucket" "geolocator" {
-  bucket = "geolocator-tf"
+  bucket = "geolocator-${random_id.s3.hex}"
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -152,10 +156,10 @@ resource "aws_api_gateway_method_response" "response_200" {
   http_method = aws_api_gateway_method.get.http_method
   status_code = "200"
 }
-resource "aws_api_gateway_integration_response" "MyDemoIntegrationResponse" {
+resource "aws_api_gateway_integration_response" "IntegrationResponse" {
   rest_api_id        = aws_api_gateway_rest_api.rest-api.id
   resource_id        = aws_api_gateway_resource.rest-api-resource.id
   http_method        = aws_api_gateway_method.get.http_method
   status_code        = aws_api_gateway_method_response.response_200.status_code
-  response_templates = { "application/json" = "" }
+  response_templates = { "application/json" = "Empty" }
 }
