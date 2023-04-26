@@ -2,7 +2,7 @@
 
 ## Deployment
 
-1. deploy/update the infrastructure using terraform.
+1. deploy/update the infrastructure using `terraform apply`.
 2. deploy the s3 bucket content using `./deploy-bucket-content.sh`.
 
 ## testing
