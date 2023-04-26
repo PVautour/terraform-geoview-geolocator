@@ -86,7 +86,7 @@ resource "aws_api_gateway_rest_api" "example" {
 resource "aws_api_gateway_resource" "example" {
   rest_api_id = aws_api_gateway_rest_api.example.id
   parent_id   = aws_api_gateway_rest_api.example.root_resource_id
-  path_part   = "{proxy+}"
+  path_part   = "v0"
 }
 
 resource "aws_api_gateway_method" "example" {
@@ -110,6 +110,27 @@ resource "aws_api_gateway_integration" "example" {
   resource_id             = aws_api_gateway_resource.example.id
   http_method             = aws_api_gateway_method.example.http_method
   integration_http_method = "POST"
-  type                    = "AWS_PROXY"
+  type                    = "AWS"
   uri                     = aws_lambda_function.example.invoke_arn
+  request_templates = {
+    "application/json" = <<EOF
+        ##  See http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html
+        ##  This template will pass through all parameters including path, querystring, header, stage variables, and context through to the integration endpoint via the body/payload
+        #set($allParams = $input.params())
+        {
+        "params" : {
+        #foreach($type in $allParams.keySet())
+            #set($params = $allParams.get($type))
+        "$type" : {
+            #foreach($paramName in $params.keySet())
+            "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                #if($foreach.hasNext),#end
+            #end
+        }
+            #if($foreach.hasNext),#end
+        #end
+        }
+        }    
+  EOF
+  }
 }
