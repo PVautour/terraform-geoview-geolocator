@@ -1,5 +1,9 @@
 # README
 
+## To do
+
+- [ ] use environment variables to namespace s3 bucket.
+
 ## Deployment
 
 1. deploy/update the infrastructure using `terraform apply`.

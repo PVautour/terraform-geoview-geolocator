@@ -20,7 +20,7 @@ resource "aws_iam_policy" "s3_access_policy" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["s3:*", "s3-object-lambda:*"]
+        Action   = ["s3:*"]
         Resource = "*"
       }
     ]
@@ -153,8 +153,9 @@ resource "aws_api_gateway_method_response" "response_200" {
   status_code = "200"
 }
 resource "aws_api_gateway_integration_response" "MyDemoIntegrationResponse" {
-  rest_api_id = aws_api_gateway_rest_api.rest-api.id
-  resource_id = aws_api_gateway_resource.rest-api-resource.id
-  http_method = aws_api_gateway_method.get.http_method
-  status_code = aws_api_gateway_method_response.response_200.status_code
+  rest_api_id        = aws_api_gateway_rest_api.rest-api.id
+  resource_id        = aws_api_gateway_resource.rest-api-resource.id
+  http_method        = aws_api_gateway_method.get.http_method
+  status_code        = aws_api_gateway_method_response.response_200.status_code
+  response_templates = { "application/json" = "" }
 }
