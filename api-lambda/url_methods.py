@@ -91,7 +91,8 @@ def assemble_url(schema, params):
     lookup_in = schema.get("lookup").get("in")
     if lookup_in:
         for in_param in lookup_in:
-            qry_params_dict[lookup_in.get(in_param)] = params.pop(in_param)
+            if in_param in params:
+                qry_params_dict[lookup_in.get(in_param)] = params.pop(in_param)
     # 4. static parameters
     static_params = schema.get("staticParams")
     if static_params:
