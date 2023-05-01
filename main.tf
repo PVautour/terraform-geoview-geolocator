@@ -9,6 +9,15 @@ terraform {
   required_version = ">= 1.2.0"
 }
 
+variable "env" {
+  type = string
+
+  validation {
+    condition     = can(regex("^(dev|stage|prod)$", var.env))
+    error_message = "Invalid env"
+  }
+}
+
 provider "aws" {
   region = "ca-central-1"
 }
@@ -42,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_policy_attachement" {
 }
 
 resource "aws_s3_bucket" "geolocator" {
-  bucket = "geolocator-${random_id.s3.hex}"
+  bucket = "geolocator-${var.env}"
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -80,6 +89,13 @@ resource "aws_lambda_function" "api-lambda" {
   timeout          = 30
   memory_size      = 3009
   runtime          = "python3.7"
+  depends_on       = [aws_s3_bucket.geolocator]
+
+  environment {
+    variables = {
+      S3_BUCKET_NAME = aws_s3_bucket.geolocator.bucket
+    }
+  }
 }
 
 resource "aws_api_gateway_rest_api" "rest-api" {

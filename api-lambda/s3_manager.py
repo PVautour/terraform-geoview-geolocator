@@ -1,6 +1,7 @@
 import boto3
 import csv
 from constants import *
+import os
 
 def get_s3_bucket():
     """
@@ -9,7 +10,7 @@ def get_s3_bucket():
     Return: The name of the bucket in S3
            # This name is just for developping and testing purposes
     """
-    return "geolocator-8cf72b9e8fc1c9db"
+    return os.environ.get('S3_BUCKET_NAME')
 
 def get_substring(string, start, end):
     """
