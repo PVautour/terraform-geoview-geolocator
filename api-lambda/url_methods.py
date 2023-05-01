@@ -1,5 +1,5 @@
 import json
-import requests
+from requests import Request, Session
 import asyncio
 
 def get_from_field(field, item):
@@ -109,9 +109,9 @@ def url_request(url, params):
 
     Return: The response from the call.
     """
-    query_response = requests.get(
-        url=url,
-        params=params,
-        timeout=5)
+    s = Session()
+    request = Request('GET', url, params=params)
+    prepared_request = request.prepare()
+    query_response = s.send(prepared_request)
     json_response = query_response.json()
     return json_response
