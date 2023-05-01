@@ -37,8 +37,6 @@ def lambda_handler(event, context):
                             get("output"). \
                             get("items")
     # 0. Read and Validate the parameters
-    print("event is")
-    print(event)
     params_full_list = validate_querystring_against_schema(event,in_api_schema)
     keys = params_full_list.pop("keys")
     lang = params_full_list.get("lang")
