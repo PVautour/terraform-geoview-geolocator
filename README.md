@@ -2,10 +2,7 @@
 
 ## To do
 
-- [ ] fix request to nomitatim. seems to send to incorrect url. fix for curl was to put quotes arount the url. the issue in the lambda is probably similar. maybe url encoding?
-- [ ] fix the fact that bucket name is hardcoded.
 - [ ] setup github actions
-- [ ] set naming of s3 bucket based on dev, staging, prod environment variable.
 
 ## Deployment
 
