@@ -9,7 +9,7 @@ def get_s3_bucket():
     Return: The name of the bucket in S3
            # This name is just for developping and testing purposes
     """
-    return "dev-app-geolocator"
+    return "geolocator-8cf72b9e8fc1c9db"
 
 def get_substring(string, start, end):
     """
