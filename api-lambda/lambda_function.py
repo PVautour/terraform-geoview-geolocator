@@ -24,6 +24,8 @@ def lambda_handler(event, context):
     Return: Standarized, validated data from REST services related to
              geolocation to be handed to the front-end
     """
+
+    event = {'params': {'querystring': event["queryStringParameters"]}}
     # Initilize variables and objects
     loads = []
     geolocator = Geolocator()
@@ -57,4 +59,14 @@ def lambda_handler(event, context):
                                    output_schema_items,
                                    service_load)
         loads.extend(items)
-    return loads
+    response = {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": json.dumps(
+            loads
+        )
+    }
+
+    return response
