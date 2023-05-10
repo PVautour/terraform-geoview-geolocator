@@ -84,7 +84,7 @@ resource "aws_lambda_function" "api-lambda" {
   filename         = "lambda_function_payload.zip"
   function_name    = "geolocator-lambda-tf"
   role             = aws_iam_role.iam_for_lambda.arn
-  handler          = "lambda_function.lambda_handler"
+  handler          = "index.handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
   timeout          = 30
   memory_size      = 3009
@@ -130,29 +130,8 @@ resource "aws_api_gateway_integration" "integration" {
   resource_id             = aws_api_gateway_resource.rest-api-resource.id
   http_method             = aws_api_gateway_method.get.http_method
   integration_http_method = "POST"
-  type                    = "AWS"
+  type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.api-lambda.invoke_arn
-  request_templates = {
-    "application/json" = <<EOF
-        ##  See http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html
-        ##  This template will pass through all parameters including path, querystring, header, stage variables, and context through to the integration endpoint via the body/payload
-        #set($allParams = $input.params())
-        {
-        "params" : {
-        #foreach($type in $allParams.keySet())
-            #set($params = $allParams.get($type))
-        "$type" : {
-            #foreach($paramName in $params.keySet())
-            "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
-                #if($foreach.hasNext),#end
-            #end
-        }
-            #if($foreach.hasNext),#end
-        #end
-        }
-        }    
-  EOF
-  }
 }
 
 resource "aws_api_gateway_integration_response" "response_200" {
